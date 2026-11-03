@@ -105,7 +105,9 @@ img { max-width: 100%; display: block; }
   display: flex;
   align-items: center;
   gap: 2.5rem;
-  padding: 0.7rem 1.5rem 0.7rem 1.5rem;
+  /* Un filo piu larga a destra: li si affacciano il pulsante "Prenota" e
+     il carrello, che altrimenti sfiorano il bordo della pillola */
+  padding: 0.7rem 1.75rem 0.7rem 1.5rem;
 }
 
 .v3-header__logo {

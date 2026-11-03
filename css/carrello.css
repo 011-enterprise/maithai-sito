@@ -1053,3 +1053,21 @@
   font-size: 0.72rem;
   line-height: 1.3;
 }
+
+/* Da computer il carrello sta nella barra come su telefono, solo un po'
+   piu grande: li lo spazio c'e, e la barra si allarga da sola per
+   contenerlo (width: fit-content sull'header). */
+@media (min-width: 769px) {
+  .cart-fab--nav {
+    width: 2.5rem;
+    height: 2.5rem;
+    /* Vicino a "Prenota": con il gap della barra (2.5rem) resterebbe
+       staccato come se fosse un'altra cosa */
+    margin-left: -1.5rem;
+  }
+
+  .cart-fab--nav .cart-fab__i {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+}

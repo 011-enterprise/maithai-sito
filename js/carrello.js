@@ -607,17 +607,19 @@
     SCHERMO_PICCOLO.addEventListener('change', posizionaFab);
   }
 
-  /* Da telefono il carrello sta dentro la barra in alto, accanto al menu:
-     e il posto dove viene cercato. Da computer resta flottante in alto a
-     destra, dove non copre niente. Stessa soglia dei 900px del CSS. */
+  /* Il carrello sta dentro la barra in alto, da telefono e da computer:
+     e il posto dove viene cercato. Flottante resta solo come riserva, se
+     la barra non ci fosse. */
   var SCHERMO_PICCOLO = window.matchMedia('(max-width: 768px)');
 
   function posizionaFab() {
     if (!fab) return;
     var barra = document.querySelector('.v3-header__inner');
 
-    if (SCHERMO_PICCOLO.matches && barra) {
-      // Prima dell'hamburger, che resta l'ultimo elemento a destra
+    if (barra) {
+      // Prima dell'hamburger, che resta l'ultimo elemento a destra.
+      // Da computer l'hamburger e nascosto e il carrello finisce dopo
+      // il pulsante "Prenota".
       var burger = barra.querySelector('.v3-header__burger');
       if (fab.parentNode !== barra) barra.insertBefore(fab, burger);
       fab.classList.add('cart-fab--nav');
