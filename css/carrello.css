@@ -961,3 +961,95 @@
   .cart-fab__icona.is-scatto { animation: none; }
   .cart-avviso { transition: none; }
 }
+
+/* =========================================================
+   LOCALE E PAGAMENTO
+   ========================================================= */
+
+/* La tendina: stesso riquadro degli altri campi, con la freccia disegnata
+   a mano perche quella di sistema cambia aspetto da un browser all'altro. */
+.cart-form__select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.25rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-black) 50%),
+    linear-gradient(135deg, var(--color-black) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.1rem) 1.25rem,
+    calc(100% - 0.75rem) 1.25rem;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+/* Il fieldset porta con se bordo e margini del browser */
+.cart-form__gruppo {
+  border: none;
+  padding: 0;
+  margin: 0 0 0.85rem;
+  min-width: 0;
+}
+
+.cart-paga {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.cart-paga__opt {
+  flex: 1 1 auto;
+  cursor: pointer;
+}
+
+/* Il pallino del radio sparisce ma resta raggiungibile da tastiera:
+   quello che si vede e il riquadro con la scritta. */
+.cart-paga__opt input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.cart-paga__opt span {
+  display: block;
+  padding: 0.65rem 0.6rem;
+  text-align: center;
+  background-color: #fff;
+  border: 2px solid rgba(56, 62, 66, 0.25);
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-black);
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.cart-paga__opt input:checked + span {
+  background-color: var(--color-red);
+  border-color: var(--color-red);
+  color: #fff;
+}
+
+.cart-paga__opt input:focus-visible + span {
+  outline: 3px solid var(--color-red);
+  outline-offset: 2px;
+}
+
+/* Campo non compilato: il riquadro rosso vale anche per i tre pulsanti */
+.cart-form__row.is-errore .cart-paga__opt span {
+  border-color: var(--color-red);
+}
+
+/* Domanda in cima al menu delle scelte (es. il riso in aggiunta) */
+.cart-varianti__titolo {
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.72rem;
+  line-height: 1.3;
+}

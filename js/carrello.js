@@ -28,6 +28,32 @@
     { citta: 'cuneo',   nome: 'Cuneo',   telefono: '0171 480 470' }
   ];
 
+  /* ---------- LOCALE DA CUI ORDINARE ----------
+     Gli ordini arrivano tutti allo stesso numero: la scelta serve a chi
+     li riceve per sapere a quale cucina mandarli. Mancano Cuneo e
+     Mondovi, che non prendono ordinazioni su WhatsApp (vedi sopra).
+     L'indirizzo serve a distinguere le due sedi di Torino. */
+  var SEDI_ORDINABILI = [
+    'Torino — Via Mazzini 56/H',
+    'Torino 2 — Via G. Gropello 22',
+    'Chieri — Via Marconi 1',
+    'Rivoli — Corso Susa 12/D',
+    'Moncalieri — Strada Torino 1'
+  ];
+
+  /* ---------- MODALITA DI PAGAMENTO ----------
+     Si paga alla consegna: qui si dichiara solo come, cosi il fattorino
+     arriva gia con il POS se serve. */
+  var PAGAMENTI = ['Contanti alla consegna', 'POS', 'Satispay'];
+
+  /* ---------- RISO IN AGGIUNTA ----------
+     Curry, seafood e meats si mangiano con il riso, che pero non e
+     compreso: invece di lasciarlo scoprire a tavola, lo si chiede al
+     momento dell'ordine, come si fa per la proteina del Pad Thai.
+     Gli id sono quelli delle sezioni di menu.html. */
+  var SEZIONI_CON_RISO = ['curry', 'seafood', 'carni'];
+  var PREZZO_RISO = 3.00;
+
   /* ---------- CONDIZIONI DI CONSEGNA ----------
      Il minimo si calcola sui soli piatti: sommarci la consegna
      significherebbe far raggiungere la soglia a chi non l'ha raggiunta. */
@@ -347,7 +373,7 @@
 
      Nel secondo caso il prezzo non viene riscritto: si prende quello
      della card, che resta l'unico punto in cui modificarlo. */
-  function opzioniDi(nome, nodoPrezzo) {
+  function opzioniDi(nome, nodoPrezzo, card) {
     var attr = nodoPrezzo.getAttribute('data-varianti');
     if (attr) {
       return attr.split('|').map(function (pezzo) {
@@ -362,6 +388,21 @@
       return DISH_DATA[nome].scelta.map(function (s) {
         return { nome: s, prezzo: prezzo };
       });
+    }
+
+    // 3. Riso in aggiunta, per le sezioni che lo prevedono. "Senza riso"
+    //    non diventa una variante: il piatto resta quello di listino.
+    var sezione = card && card.closest('.mp-section');
+    if (sezione && SEZIONI_CON_RISO.indexOf(sezione.id) !== -1) {
+      var base = leggiPrezzo(nodoPrezzo.textContent);
+      var conRiso = [
+        { nome: 'Con riso', prezzo: base + PREZZO_RISO, variante: 'con riso' },
+        { nome: 'Senza riso', prezzo: base, variante: '' }
+      ];
+      // La domanda sta sopra le due scelte: senza, i due prezzi diversi
+      // sembrerebbero due versioni del piatto
+      conRiso.titolo = 'Vuoi aggiungere il riso? (+' + formatta(PREZZO_RISO) + ')';
+      return conRiso;
     }
 
     return null;
@@ -396,6 +437,13 @@
     var menu = document.createElement('div');
     menu.className = 'cart-varianti';
 
+    if (varianti.titolo) {
+      var t = document.createElement('p');
+      t.className = 'cart-varianti__titolo';
+      t.textContent = varianti.titolo;
+      menu.appendChild(t);
+    }
+
     varianti.forEach(function (v) {
       var b = document.createElement('button');
       b.type = 'button';
@@ -403,7 +451,9 @@
       b.innerHTML = '<span>' + v.nome + '</span><strong>' + formatta(v.prezzo) + '</strong>';
       b.addEventListener('click', function (e) {
         e.stopPropagation();
-        aggiungi(nome, v.prezzo, v.nome, piccante);
+        // variante: '' significa "nessuna variante" (es. Senza riso), e
+        // va distinto dal caso in cui il campo non c'e proprio
+        aggiungi(nome, v.prezzo, v.variante !== undefined ? v.variante : v.nome, piccante);
         menu.remove();
         chiudiPopup();
       });
@@ -433,7 +483,7 @@
       // Il nome puo contenere lo span della quantita ("3pz"): prendo solo
       // il primo nodo di testo, come fa gia il popup.
       var nome = nodoNome.firstChild.textContent.trim();
-      var opzioni = opzioniDi(nome, nodoPrezzo);
+      var opzioni = opzioniDi(nome, nodoPrezzo, card);
       var piccante = piccanteDiPartenza(card, nome);
 
       var wrap;
@@ -511,7 +561,7 @@
       var nodoPrezzo = e.detail.card
         ? e.detail.card.querySelector('.dish-card-sm__price')
         : null;
-      popupOpzioni = nodoPrezzo ? opzioniDi(popupNome, nodoPrezzo) : null;
+      popupOpzioni = nodoPrezzo ? opzioniDi(popupNome, nodoPrezzo, e.detail.card) : null;
       popupPiccante = e.detail.card ? piccanteDiPartenza(e.detail.card, popupNome) : null;
 
       // Avvisa che il livello mostrato non e fisso, altrimenti sembra
@@ -640,6 +690,7 @@
             }).join(' e ') +
             ' non prendono ordinazioni su WhatsApp, ma solo per telefono.' +
           '</p>' +
+          tendina('locale', 'Da quale locale vuoi ordinare?', SEDI_ORDINABILI) +
           campo('nome', 'Nome', 'text') +
           campo('cognome', 'Cognome', 'text') +
           campo('telefono', 'Telefono', 'tel') +
@@ -650,6 +701,7 @@
             campo('provincia', 'Prov.', 'text', 'TO') +
           '</div>' +
           '<div class="cart-form__nota" hidden></div>' +
+          sceltePagamento() +
           '<label class="cart-form__row">' +
             '<span class="cart-form__label">Note <em>(facoltativo)</em></span>' +
             '<textarea name="note" rows="2" class="cart-form__input"></textarea>' +
@@ -705,6 +757,39 @@
     '</label>';
   }
 
+  // Menu a tendina. Prima voce vuota: senza, la prima della lista
+  // risulterebbe scelta senza che nessuno l'abbia scelta.
+  function tendina(nome, etichetta, voci) {
+    return '<label class="cart-form__row">' +
+      '<span class="cart-form__label">' + etichetta + '</span>' +
+      '<select name="' + nome + '" class="cart-form__input cart-form__select">' +
+        '<option value="">Scegli il locale…</option>' +
+        voci.map(function (v) {
+          return '<option value="' + v + '">' + v + '</option>';
+        }).join('') +
+      '</select>' +
+      '<span class="cart-form__err"></span>' +
+    '</label>';
+  }
+
+  /* Tre pulsanti invece di una seconda tendina: le opzioni sono poche e
+     si scelgono con un tocco solo. Sono radio veri, quindi funzionano da
+     tastiera con le frecce e vengono letti come un gruppo unico. */
+  function sceltePagamento() {
+    return '<fieldset class="cart-form__row cart-form__gruppo">' +
+      '<legend class="cart-form__label">Come vuoi pagare?</legend>' +
+      '<div class="cart-paga">' +
+        PAGAMENTI.map(function (p) {
+          return '<label class="cart-paga__opt">' +
+            '<input type="radio" name="pagamento" value="' + p + '">' +
+            '<span>' + p + '</span>' +
+          '</label>';
+        }).join('') +
+      '</div>' +
+      '<span class="cart-form__err"></span>' +
+    '</fieldset>';
+  }
+
   function apriPannello() {
     pannello.classList.add('is-open');
     pannello.setAttribute('aria-hidden', 'false');
@@ -757,7 +842,7 @@
             }).join('') +
           '</div>') +
         '<input type="text" class="cart-riga__nota" maxlength="120" ' +
-               'placeholder="Richieste per questo piatto (es. senza aglio)" ' +
+               'placeholder="Richieste per questo piatto (es. senza prezzemolo)" ' +
                'aria-label="Richieste per ' + v.nome + '">';
 
       riga.querySelector('[data-a="meno"]').addEventListener('click', function () { cambiaQta(k, -1); });
@@ -823,9 +908,15 @@
   function ripristinaDati() {
     try {
       var d = JSON.parse(localStorage.getItem(CHIAVE_DATI)) || {};
-      ['nome', 'cognome', 'telefono', 'indirizzo', 'citta', 'cap', 'provincia', 'note'].forEach(function (c) {
+      ['nome', 'cognome', 'telefono', 'indirizzo', 'citta', 'cap', 'provincia', 'note', 'locale'].forEach(function (c) {
         if (d[c] && form.elements[c]) form.elements[c].value = d[c];
       });
+      // I radio non hanno un .value da impostare: si spunta quello giusto
+      if (d.pagamento) {
+        form.querySelectorAll('[name="pagamento"]').forEach(function (r) {
+          r.checked = r.value === d.pagamento;
+        });
+      }
     } catch (e) { /* silenzioso */ }
   }
 
@@ -881,8 +972,19 @@
     }
   }
 
+  // Per il gruppo di radio form.elements restituisce la lista, non un
+  // elemento: li serve il primo, che e quello da mettere a fuoco.
+  function nodoDi(nome) {
+    var el = form.elements[nome];
+    if (el && !el.tagName && typeof el.length === 'number') el = el[0];
+    return el || null;
+  }
+
   function mostraErrore(campo, messaggio) {
-    var riga = form.elements[campo].closest('.cart-form__row');
+    var el = nodoDi(campo);
+    if (!el) return;
+    var riga = el.closest('.cart-form__row');
+    if (!riga) return;
     riga.classList.add('is-errore');
     riga.querySelector('.cart-form__err').textContent = messaggio;
   }
@@ -900,6 +1002,8 @@
 
   function valida(d) {
     var errori = [];
+    if (!d.locale) errori.push(['locale', 'Scegli il locale da cui ordinare']);
+    if (!d.pagamento) errori.push(['pagamento', 'Scegli come vuoi pagare']);
     if (!d.nome) errori.push(['nome', 'Inserisci il tuo nome']);
     if (!d.cognome) errori.push(['cognome', 'Inserisci il tuo cognome']);
 
@@ -939,6 +1043,7 @@
   function componiMessaggio(d) {
     var righe = [];
     righe.push('Ciao Mai Thai! Vorrei fare un ordine 🍜');
+    righe.push('Locale: ' + d.locale);
     righe.push('Modalità: Consegna a domicilio');
     righe.push('');
 
@@ -965,6 +1070,7 @@
     righe.push('Telefono: ' + d.telefono);
     // Indirizzo su una riga sola, nel formato italiano abituale
     righe.push('Indirizzo: ' + d.indirizzo + ', ' + d.cap + ' ' + d.citta + ' (' + d.provincia + ')');
+    righe.push('Pagamento: ' + d.pagamento);
     if (d.note) righe.push('Note: ' + d.note);
 
     return righe.join('\n');
@@ -974,7 +1080,11 @@
     e.preventDefault();
     puliciErrori();
 
+    var pagamentoScelto = form.querySelector('[name="pagamento"]:checked');
+
     var d = {
+      locale: form.elements.locale.value,
+      pagamento: pagamentoScelto ? pagamentoScelto.value : '',
       nome: form.elements.nome.value.trim(),
       cognome: form.elements.cognome.value.trim(),
       telefono: form.elements.telefono.value.trim(),
@@ -1002,7 +1112,8 @@
     var errori = valida(d);
     if (errori.length) {
       errori.forEach(function (x) { mostraErrore(x[0], x[1]); });
-      form.elements[errori[0][0]].focus();
+      var primo = nodoDi(errori[0][0]);
+      if (primo) primo.focus();
       return;
     }
 
