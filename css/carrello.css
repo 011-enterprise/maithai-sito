@@ -192,10 +192,10 @@
 
 /* In alto a destra: su mobile la barra filtri occupa il fondo dello schermo
    quando si scorre, quindi in basso si sovrapporrebbero.
-   z-index 200: sopra header (100) e filtri (50), sotto il popup piatto (300). */
-/* top 5.5rem su mobile: l'header e un'isola centrata larga ~140px e il
-   carrello ne sfiora il bordo destro per una decina di pixel. Sotto i
-   900px scende quindi sotto l'header, che finisce a circa 80px. */
+   z-index 200: sopra header (110) e filtri (50), sotto il popup piatto (300). */
+/* Da telefono questo pulsante finisce dentro la barra in alto (vedi
+   .cart-fab--nav in fondo al file): la posizione fissa qui sotto vale
+   solo da computer, o se il JS non trovasse la barra. */
 .cart-fab {
   position: fixed;
   top: 5.5rem;
@@ -254,8 +254,65 @@
   line-height: 1;
 }
 
-@media (min-width: 900px) {
+/* 769px: sopra questa soglia l'header torna isola centrata e il carrello
+   gli sta accanto senza toccarlo */
+@media (min-width: 769px) {
   .cart-fab { top: 1.5rem; right: 1.5rem; }
+}
+
+/* ---------------------------------------------------------
+   CARRELLO DENTRO LA BARRA (da telefono)
+   Il pulsante viene spostato dentro l'header da carrello.js.
+   Li smette di essere flottante: diventa un bottone tondo con
+   la sola icona, accanto al menu, come nei siti di e-commerce.
+   --------------------------------------------------------- */
+/* Niente cerchio pieno: dentro la barra beige il carrello e un'icona
+   sola, dello stesso peso dell'hamburger che gli sta accanto. */
+.cart-fab--nav {
+  position: static;
+  top: auto;
+  right: auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  gap: 0;
+  justify-content: center;
+  background-color: transparent;
+  color: var(--color-red);
+  box-shadow: none;
+  flex-shrink: 0;
+}
+
+/* Il totale non ci starebbe: resta nel pannello, che si apre al tocco */
+.cart-fab--nav .cart-fab__t { display: none; }
+
+.cart-fab--nav .cart-fab__i {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Pallino antracite sull'angolo: sull'icona rossa il rosso sparirebbe.
+   Il bordo beige, del colore della barra, lo stacca dal disegno. */
+.cart-fab--nav .cart-fab__n {
+  top: -0.4em;
+  right: -0.55em;
+  min-width: 1.45em;
+  height: 1.45em;
+  background-color: var(--color-black);
+  color: #fff;
+  border: 2px solid var(--color-white);
+  font-size: 0.68rem;
+}
+
+/* Carrello vuoto: il pulsante resta visibile, sparisce solo il conteggio */
+.cart-fab--nav .cart-fab__n[hidden] { display: none; }
+
+.cart-fab--nav:active { opacity: 0.6; }
+
+.cart-fab--nav:focus-visible {
+  outline: 3px solid var(--color-red);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 /* =========================================================
@@ -299,21 +356,37 @@
   to   { transform: translateY(0); }
 }
 
+/* Resta agganciata in alto mentre si scorre: il pannello e lungo e con
+   la X in cima, dopo due schermate di piatti, non si trova piu come
+   chiudere. float per toglierla dal flusso senza coprire il titolo. */
 .cart-panel__close {
-  position: absolute;
-  top: 0.9rem;
-  right: 0.9rem;
-  width: 2rem;
-  height: 2rem;
+  position: sticky;
+  top: 0;
+  float: right;
+  z-index: 3;
+  width: 2.25rem;
+  height: 2.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.08);
-  border: none;
+  background-color: var(--color-white);
+  border: 2px solid var(--color-black);
   border-radius: 50%;
   color: var(--color-black);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  line-height: 1;
   cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.cart-panel__close:hover {
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.cart-panel__close:focus-visible {
+  outline: 3px solid var(--color-red);
+  outline-offset: 2px;
 }
 
 .cart-panel__title {
@@ -799,4 +872,92 @@
     from { transform: translateX(100%); }
     to   { transform: translateX(0); }
   }
+}
+
+/* =========================================================
+   CONFERMA DELL'AGGIUNTA
+   ========================================================= */
+
+/* Copia della foto che vola verso il carrello. Fixed perche le posizioni
+   sono prese dallo schermo, non dalla pagina. */
+.cart-volo {
+  position: fixed;
+  z-index: 450;              /* sopra il popup piatto (300), sotto il banner cookie (500) */
+  pointer-events: none;
+  border-radius: 10px;
+  background-color: var(--color-white);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  will-change: transform, opacity;
+}
+
+/* Scatto dell'icona del carrello quando il numero cambia */
+.cart-fab__icona.is-scatto {
+  animation: cart-scatto 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes cart-scatto {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.35); }
+  70%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+/* Striscia di conferma: si usa quando le animazioni sono disattivate nel
+   sistema, o se il volo non puo partire (foto non ancora caricata). */
+.cart-avviso {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translate(-50%, 1.5rem);
+  z-index: 450;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  max-width: calc(100% - 2rem);
+  padding: 0.75rem 0.85rem 0.75rem 1.1rem;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+}
+
+.cart-avviso.is-visibile {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+.cart-avviso__t {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cart-avviso__b {
+  flex-shrink: 0;
+  padding: 0.45rem 1rem;
+  background-color: var(--color-red);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.cart-avviso__b:hover { background-color: var(--color-white); color: var(--color-black); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-fab__icona.is-scatto { animation: none; }
+  .cart-avviso { transition: none; }
 }

@@ -94,7 +94,9 @@ img { max-width: 100%; display: block; }
   transform: translateX(-50%);
   width: fit-content;
   max-width: calc(100% - 4rem);
-  z-index: 100;
+  /* Sopra il pannello del menu mobile (100): altrimenti la X per chiuderlo
+     finisce sotto il rosso e non si vede piu come uscire */
+  z-index: 110;
   background-color: var(--beige);
   border-radius: 999px;
 }
@@ -277,14 +279,6 @@ img { max-width: 100%; display: block; }
   background-color: var(--black);
   color: var(--beige);
   border-color: var(--black);
-}
-
-/* Giallo Glovo in hover. Va dopo la regola --secondary:hover, che ha la
-   stessa specificita: vince l'ultima dichiarata. */
-.v3-hero__cta--glovo:hover {
-  background-color: #ffc041;
-  border-color: #ffc041;
-  color: #fff;
 }
 
 .v3-hero__dish img {
@@ -507,46 +501,6 @@ img { max-width: 100%; display: block; }
   line-height: 1;
   text-align: center;
   white-space: nowrap;
-}
-
-/* margin-top auto tiene la piccantezza sempre a filo in fondo alla card,
-   anche se un nome dovesse andare a capo */
-.v3-dish__spice {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-  border-top: 2px solid rgba(255, 255, 255, 0.25);
-  padding-top: 1rem;
-  width: 80%;
-  margin: auto auto 0;
-}
-
-.v3-dish__spice-label {
-  font-family: var(--font-body);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--beige);
-}
-
-.v3-dish__spice-icons {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.v3-dish__spice-icons img {
-  width: 26px;
-  height: auto;
-  filter: brightness(0) invert(1) brightness(0.22);
-  opacity: 0.3;
-  transition: opacity 0.2s;
-}
-
-.v3-dish__spice-icons img.active {
-  opacity: 1;
 }
 
 .v3-dish__line { display: none; }
@@ -1041,13 +995,23 @@ img { max-width: 100%; display: block; }
 /* ===== RESPONSIVE ===== */
 
 @media (max-width: 768px) {
-  /* Header */
+  /* Header — barra larga quanto lo schermo: dentro ci stanno logo,
+     carrello e menu, come su quasi tutti i siti da telefono */
   .v3-header__nav  { display: none; }
   .v3-header__cta  { display: none; }
   .v3-header__burger { display: flex; }
-  .v3-header { max-width: calc(100% - 2rem); }
+  .v3-header {
+    width: calc(100% - 2rem);
+    max-width: calc(100% - 2rem);
+  }
   .v3-header__logo img { height: 48px; }
-  .v3-header__inner { padding: 0.5rem 1rem 0.5rem 1.25rem; gap: 1rem; }
+  .v3-header__inner {
+    padding: 0.5rem 1rem 0.5rem 1.25rem;
+    gap: 0.75rem;
+    justify-content: space-between;
+  }
+  /* Il logo spinge carrello e menu contro il bordo destro */
+  .v3-header__logo { margin-right: auto; }
 
   /* Hero */
   .v3-hero {
@@ -1227,13 +1191,21 @@ img { max-width: 100%; display: block; }
   animation-play-state: paused;
 }
 
+/* Ogni foto e un link al profilo Instagram */
 .v3-gallery__item {
+  display: block;
   flex: 0 0 auto;
   width: 260px;
   height: 430px;
   border-radius: 8px;
   overflow: hidden;
   background-color: rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.v3-gallery__item:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 3px;
 }
 
 .v3-gallery__item img {

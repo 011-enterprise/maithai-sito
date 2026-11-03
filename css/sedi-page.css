@@ -326,23 +326,31 @@ body {
   font-style: italic;
 }
 
-/* CTA button */
+/* CTA button — stessa pillola rossa degli altri CTA del sito
+   (header "Prenota", pulsanti della hero) */
 .sede__cta {
   display: inline-block;
   align-self: flex-start;
+  margin-top: 1.75rem;
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-black);
-  background-color: var(--color-yellow);
-  padding: 0.85rem 2rem;
-  border-radius: 2px;
+  color: var(--color-white);
+  background-color: var(--color-red);
+  padding: 0.85rem 2.2rem;
+  border-radius: 999px;
   transition: background-color 0.2s, color 0.2s;
 }
 
 .sede__cta:hover {
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+/* Sui blocchi antracite l'hover scuro si confonderebbe con lo sfondo */
+.sede-block--alt .sede__cta:hover {
   background-color: var(--color-white);
   color: var(--color-black);
 }

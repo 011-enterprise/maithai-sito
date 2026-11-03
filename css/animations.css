@@ -1,11 +1,18 @@
 /* ===== ANIMAZIONI SITO ===== */
 
 /* ----- Scroll to top button ----- */
+/* env(safe-area-inset-bottom): sugli iPhone senza tasto home il fondo
+   dello schermo e occupato dalla barra di sistema, e il pulsante ci
+   finirebbe sopra. Dove non esiste vale 0 e resta tutto com'era.
+
+   z-index 95: sotto il menu mobile (100), l'header (110), il popup dei
+   piatti (300), il carrello (400) e il banner cookie (500). Con 900
+   restava a galla sopra tutto, e a carrello aperto copriva il modulo. */
 .scroll-top {
   position: fixed;
-  bottom: 2rem;
+  bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
   right: 2rem;
-  z-index: 900;
+  z-index: 95;
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -166,5 +173,16 @@ body {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+  }
+}
+
+/* Su telefono il pulsante sta piu vicino al bordo: lo schermo e stretto
+   e due centimetri di margine mangiano spazio ai contenuti. */
+@media (max-width: 600px) {
+  .scroll-top {
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    right: 1.25rem;
+    width: 44px;      /* resta sopra i 44px minimi per il tocco */
+    height: 44px;
   }
 }

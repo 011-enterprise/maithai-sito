@@ -12,7 +12,14 @@
         if (entry.isIntersecting) {
           const id = entry.target.id;
           navLinks.forEach((link) => {
-            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+            const attiva = link.getAttribute('href') === `#${id}`;
+            link.classList.toggle('active', attiva);
+            // Da telefono la barra scorre: la categoria in cui ci si trova
+            // potrebbe essere fuori vista, quindi la si porta al centro.
+            // block: 'nearest' per non muovere anche la pagina.
+            if (attiva && window.matchMedia('(max-width: 768px)').matches) {
+              link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
           });
         }
       });
@@ -39,6 +46,48 @@
     img.className = 'mp-nav__icon';
     link.insertBefore(img, link.firstChild);
   });
+
+  // Da telefono la barra e gia fissa in basso (vedi menu-page.css): niente
+  // passaggio da orizzontale a laterale, quindi tutta la logica qui sotto
+  // non deve girare. Resta solo l'evidenziazione della categoria attiva.
+  const DA_TELEFONO = window.matchMedia('(max-width: 768px)');
+
+  /* ----- Segnali che la fila delle categorie continua di lato -----
+     Le sfumature sui bordi si accendono e si spengono a seconda di dove
+     si e arrivati: a destra finche c'e altro, a sinistra appena ci si
+     sposta. In piu, la prima volta che si apre la pagina, la barra fa un
+     piccolo movimento: e il modo piu diretto per dire che si trascina. */
+  const inner = nav.querySelector('.mp-nav__inner');
+
+  function aggiornaSfumature() {
+    if (!inner) return;
+    const massimo = inner.scrollWidth - inner.clientWidth;
+    nav.classList.toggle('is-scorso', inner.scrollLeft > 4);
+    nav.classList.toggle('is-in-fondo', massimo <= 4 || inner.scrollLeft >= massimo - 4);
+  }
+
+  if (inner) {
+    inner.addEventListener('scroll', aggiornaSfumature, { passive: true });
+    window.addEventListener('resize', aggiornaSfumature, { passive: true });
+    aggiornaSfumature();
+  }
+
+  function accennaScorrimento() {
+    if (!inner || !DA_TELEFONO.matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (inner.scrollWidth - inner.clientWidth < 20) return;   // ci sta tutto
+    try {
+      if (sessionStorage.getItem('maithai-filtri-visto')) return;
+      sessionStorage.setItem('maithai-filtri-visto', '1');
+    } catch (e) { /* navigazione privata: l'accenno si rivede, poco male */ }
+
+    setTimeout(() => {
+      inner.scrollTo({ left: 56, behavior: 'smooth' });
+      setTimeout(() => inner.scrollTo({ left: 0, behavior: 'smooth' }), 650);
+    }, 900);
+  }
+
+  window.addEventListener('load', accennaScorrimento);
 
   // Sidebar: slide in da sinistra dopo scroll
   let navNaturalTop = 0;
@@ -110,6 +159,7 @@
   }
 
   function updateNavPosition() {
+    if (DA_TELEFONO.matches) return;
     const scrollY = window.scrollY;
     const trigger = navNaturalTop - HEADER_H + EXTRA_SCROLL;
     if (scrollY > trigger) {
@@ -123,6 +173,17 @@
   // scroll a meta pagina, e senza questa chiamata la nav restava in alto
   // finche l'utente non scrollava di nuovo.
   function syncToScroll(immediate) {
+    // Girando il telefono o ridimensionando la finestra si puo passare da
+    // una modalita all'altra: qui si ripulisce lo stato dell'altra.
+    if (DA_TELEFONO.matches) {
+      nav.classList.remove('is-sidebar', 'is-visible');
+      nav.style.opacity = '';
+      nav.style.transition = '';
+      isSidebar = false;
+      isAnimating = false;
+      return;
+    }
+
     initNavTop();
     const trigger = navNaturalTop - HEADER_H + EXTRA_SCROLL;
     if (immediate && window.scrollY > trigger) {

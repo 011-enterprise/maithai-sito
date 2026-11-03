@@ -56,37 +56,6 @@ body {
   line-height: 0.9;
 }
 
-/* Pulsante Glovo. Riprende lo schema dei CTA del sito (.v3-hero__cta):
-   font di testo, 0.82rem, letter-spacing 0.12em, pill. Cambia solo il
-   colore, che e quello del brand Glovo. */
-.mp-hero__glovo {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  margin-top: 1.5rem;
-  padding: 0.9rem 2.2rem;
-  background-color: #ffc041;
-  color: #fff;
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 0.82rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  line-height: 1;
-  border-radius: 999px;
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
-}
-
-.mp-hero__glovo img {
-  height: 1.8em;
-  width: auto;
-  display: block;
-}
-
-.mp-hero__glovo:hover {
-  background-color: #f0b02e;
-}
-
 /* ----- Sticky category nav ----- */
 .mp-nav {
   position: sticky;
@@ -478,68 +447,132 @@ img.mp-nav__icon {
 
 @media (max-width: 768px) {
   .mp-hero { padding-bottom: 1.5rem; padding-top: 80px; }
-  .mp-nav {
-    top: 70px; /* header mobile più basso */
-    padding: 0.5rem 1rem;
-    overflow: hidden;
-  }
-  .mp-nav__inner {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    border-radius: 16px;
-    gap: 0.25rem;
-    padding: 0.35rem;
-  }
-  .mp-nav__link { font-size: 0.72rem; padding: 0.5rem 0.85rem; letter-spacing: 0.06em; }
 
-  /* Su mobile la barra non va di lato ma in basso: uno schermo stretto
-     non ha spazio per una colonna laterale. Entra scivolando dal basso. */
+  /* Da telefono la barra delle categorie sta in basso da subito, fissa,
+     come nelle app. Prima nasceva in cima e scivolava giu al primo
+     scorrimento: il passaggio era poco fluido e spostava i contenuti.
+     Le classi is-sidebar/is-visible qui non servono piu, lo stato e uno solo. */
+  .mp-nav,
   .mp-nav.is-sidebar {
+    position: fixed;
     top: auto;
     bottom: 0;
     left: 0;
     right: 0;
     width: 100%;
-    transform: translateY(100%);
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    overflow: visible;
+    transform: none;
+    opacity: 1;
+    transition: none;
   }
 
-  .mp-nav.is-sidebar.is-visible {
-    transform: translateY(0);
-  }
-
+  /* Nove categorie non entrano in larghezza: schiacciate, le scritte si
+     accavallano. La barra scorre con il dito e ogni voce tiene la sua
+     misura naturale. */
+  .mp-nav__inner,
   .mp-nav.is-sidebar .mp-nav__inner {
+    display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    justify-content: space-around;
+    justify-content: flex-start;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     border-radius: 16px 16px 0 0;
-    padding: 0.5rem 0.25rem;
+    padding: 0.5rem 0.5rem;
     padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
-    gap: 0;
+    gap: 0.15rem;
   }
 
+  .mp-nav__inner::-webkit-scrollbar { display: none; }
+
+  /* Sfumature sui bordi: dicono che la fila continua oltre lo schermo.
+     Stanno sulla barra, non sul contenitore che scorre, altrimenti
+     scorrerebbero via insieme alle voci. */
+  .mp-nav::before,
+  .mp-nav::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2.5rem;
+    pointer-events: none;
+    z-index: 2;
+    transition: opacity 0.25s ease;
+  }
+
+  .mp-nav::after {
+    right: 0;
+    background: linear-gradient(to right, rgba(227, 13, 24, 0), var(--color-red) 75%);
+    border-radius: 0 16px 0 0;
+  }
+
+  /* A sinistra compare solo dopo che si e scorso */
+  .mp-nav::before {
+    left: 0;
+    background: linear-gradient(to left, rgba(227, 13, 24, 0), var(--color-red) 75%);
+    border-radius: 16px 0 0 0;
+    opacity: 0;
+  }
+
+  .mp-nav.is-scorso::before { opacity: 1; }
+  .mp-nav.is-in-fondo::after { opacity: 0; }
+
+  .mp-nav__link,
   .mp-nav.is-sidebar .mp-nav__link {
-    padding: 0.5rem 0.25rem;
-    flex: 1 1 0;
-    min-width: 0;
+    flex: 0 0 auto;
+    gap: 0.25rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.04em;
+    padding: 0.4rem 0.55rem;
+    border-radius: 12px;
+  }
+
+  /* La voce in cui ci si trova si stacca dalle altre */
+  .mp-nav__link.active,
+  .mp-nav.is-sidebar .mp-nav__link.active {
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+
+  /* Nella barra in basso le scritte servono: senza, nove icone simili tra
+     loro non si distinguono. Annulla il nascondi della versione laterale. */
+  .mp-nav__link-text,
+  .mp-nav.is-sidebar .mp-nav__link-text {
+    display: block;
   }
 
   /* 9 icone in riga: a 26px non ci starebbero sugli schermi più stretti */
+  .mp-nav__link img.mp-nav__icon,
   .mp-nav.is-sidebar .mp-nav__link img.mp-nav__icon {
     width: 22px;
     height: 22px;
   }
 
   /* Il tooltip laterale non ha senso in una barra a tutta larghezza */
+  .mp-nav__link::after,
   .mp-nav.is-sidebar .mp-nav__link::after {
     display: none;
   }
 
-  .mp-main { padding-bottom: 100px; }
+  /* Il pulsante "torna in cima" sta sopra la barra, non sulle categorie */
+  .scroll-top {
+    bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* padding-top: la barra non occupa piu spazio in cima, il primo titolo
+     resterebbe appiccicato alla foto della hero.
+     padding-bottom: spazio sotto l'ultimo piatto, che altrimenti finisce
+     dietro la barra delle categorie. */
+  .mp-main {
+    padding-top: 1.25rem;
+    padding-bottom: 100px;
+  }
   .mp-section { scroll-margin-top: 80px; padding: var(--space-md) 0; }
   .mp-section__title { font-size: clamp(2rem, 8vw, 3.5rem); }
   .mp-main .container { padding: 0 1rem; }

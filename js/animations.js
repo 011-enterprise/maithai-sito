@@ -13,13 +13,24 @@
     document.body.style.overflow = isOpen ? 'hidden' : '';
   });
 
+  const chiudi = () => {
+    mobileNav.classList.remove('is-open');
+    burger.classList.remove('is-open');
+    burger.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  };
+
   mobileNav.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      mobileNav.classList.remove('is-open');
-      burger.classList.remove('is-open');
-      burger.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
-    });
+    link.addEventListener('click', chiudi);
+  });
+
+  // Vie d'uscita oltre alla X: toccare il rosso attorno alle voci, o Esc
+  mobileNav.addEventListener('click', e => {
+    if (e.target === mobileNav) chiudi();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && mobileNav.classList.contains('is-open')) chiudi();
   });
 })();
 

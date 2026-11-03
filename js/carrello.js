@@ -84,6 +84,126 @@
      regolare, null per antipasti e bevande. La piccantezza non entra
      nella chiave: e un attributo della riga, modificabile sul posto
      come la nota, non un piatto diverso. */
+  /* =========================================================
+     CONFERMA DELL'AGGIUNTA
+     Il selettore "− 1 +" che compare sulla card dice che qualcosa e
+     successo, ma non che il piatto e finito nel carrello, che sta in
+     cima e puo essere fuori schermo. Qui una copia della foto vola
+     fino all'icona, che poi fa uno scatto con il numero aggiornato.
+     Con le animazioni disattivate nel sistema si mostra invece una
+     striscia in basso, cosi il segnale non si perde.
+     ========================================================= */
+
+  var MOTO_RIDOTTO = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var origineVolo = null;   // da dove parte: impostato da chi aggiunge
+
+  function daDove(el) { origineVolo = el || null; }
+
+  // La foto del piatto: card del menu, popup o riga delle bevande
+  function fotoDi(el) {
+    if (!el) return null;
+    if (el.tagName === 'IMG') return el;
+    var contenitore = el.closest('.dish-card-sm, .dish-modal__box, .dish-modal, .drinks-list li');
+    return contenitore ? contenitore.querySelector('img') : null;
+  }
+
+  function confermaAggiunta(nome) {
+    var partenza = fotoDi(origineVolo) || origineVolo;
+    origineVolo = null;
+
+    if (MOTO_RIDOTTO.matches || !vola(partenza)) avviso(nome);
+    scattoCarrello();
+  }
+
+  // Restituisce false se non riesce a partire: in quel caso resta l'avviso
+  function vola(partenza) {
+    if (!partenza || !fab || fab.hidden) return false;
+
+    var a = partenza.getBoundingClientRect();
+    var b = fab.getBoundingClientRect();
+    if (!a.width || !b.width) return false;
+
+    var clone = document.createElement('div');
+    clone.className = 'cart-volo';
+    clone.style.left = a.left + 'px';
+    clone.style.top = a.top + 'px';
+    clone.style.width = a.width + 'px';
+    clone.style.height = a.height + 'px';
+    if (partenza.tagName === 'IMG') {
+      clone.style.backgroundImage = 'url("' + (partenza.currentSrc || partenza.src) + '")';
+    }
+    document.body.appendChild(clone);
+
+    if (typeof clone.animate !== 'function') { clone.remove(); return false; }
+
+    var dx = (b.left + b.width / 2) - (a.left + a.width / 2);
+    var dy = (b.top + b.height / 2) - (a.top + a.height / 2);
+
+    var volo = clone.animate([
+      { transform: 'translate(0, 0) scale(1)', opacity: 0.95 },
+      // Passaggio a meta strada un po' piu in alto: la curva si legge
+      // meglio di una linea dritta
+      { transform: 'translate(' + (dx * 0.55) + 'px, ' + (dy * 0.45 - 40) + 'px) scale(0.5)',
+        opacity: 0.9, offset: 0.6 },
+      { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(0.1)', opacity: 0.2 }
+    ], { duration: 620, easing: 'cubic-bezier(0.4, 0, 0.3, 1)' });
+
+    volo.onfinish = function () { clone.remove(); };
+    volo.oncancel = function () { clone.remove(); };
+    return true;
+  }
+
+  /* Il popup copre quasi tutto lo schermo: lasciandolo aperto, il volo
+     del piatto e il carrello resterebbero nascosti dietro. Si chiude
+     dopo aver fatto partire l'animazione, che e gia staccata dal popup. */
+  function chiudiPopup() {
+    var modal = document.getElementById('dish-modal');
+    if (!modal || !modal.classList.contains('is-open')) return;
+    var x = modal.querySelector('.dish-modal__close');
+    if (x) {
+      x.click();                    // stessa chiusura del pulsante, in menu-modal.js
+    } else {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+  }
+
+  function scattoCarrello() {
+    if (!fab) return;
+    var icona = fab.querySelector('.cart-fab__icona');
+    if (!icona) return;
+    icona.classList.remove('is-scatto');
+    void icona.offsetWidth;          // riavvia l'animazione se si aggiunge in fretta
+    icona.classList.add('is-scatto');
+  }
+
+  var avvisoEl, avvisoTimer;
+
+  function avviso(nome) {
+    if (!avvisoEl) {
+      avvisoEl = document.createElement('div');
+      avvisoEl.className = 'cart-avviso';
+      avvisoEl.setAttribute('role', 'status');
+      avvisoEl.innerHTML =
+        '<span class="cart-avviso__t"></span>' +
+        '<button type="button" class="cart-avviso__b">Vedi il carrello</button>';
+      avvisoEl.querySelector('.cart-avviso__b').addEventListener('click', function () {
+        nascondiAvviso();
+        apriPannello();
+      });
+      document.body.appendChild(avvisoEl);
+    }
+    avvisoEl.querySelector('.cart-avviso__t').textContent = nome + ' aggiunto al carrello';
+    avvisoEl.classList.add('is-visibile');
+    clearTimeout(avvisoTimer);
+    avvisoTimer = setTimeout(nascondiAvviso, 3000);
+  }
+
+  function nascondiAvviso() {
+    if (avvisoEl) avvisoEl.classList.remove('is-visibile');
+  }
+
   function aggiungi(nome, prezzo, variante, piccante) {
     var k = chiaveDi(nome, variante);
     if (carrello[k]) {
@@ -100,14 +220,20 @@
     }
     salva();
     aggiornaTutto();
+    confermaAggiunta(nome);
   }
 
-  function cambiaQta(k, delta) {
+  // muto: dentro il pannello aperto la riga si aggiorna sotto gli occhi,
+  // una conferma in piu sarebbe rumore
+  function cambiaQta(k, delta, muto) {
     if (!carrello[k]) return;
+    var nome = carrello[k].nome;
     carrello[k].qta += delta;
     if (carrello[k].qta <= 0) delete carrello[k];
     salva();
     aggiornaTutto();
+    // Solo in aggiunta: togliendo un piatto la conferma sarebbe fuori luogo
+    if (delta > 0 && !muto) confermaAggiunta(nome);
   }
 
   function rimuovi(k) {
@@ -193,8 +319,8 @@
     // sui pulsanti aprirebbe anche quello.
     function stop(e) { e.stopPropagation(); }
 
-    btn.addEventListener('click', function (e) { stop(e); onAggiungi(); });
-    piu.addEventListener('click', function (e) { stop(e); cambiaQta(chiaveFn(), 1); });
+    btn.addEventListener('click', function (e) { stop(e); daDove(wrap); onAggiungi(); });
+    piu.addEventListener('click', function (e) { stop(e); daDove(wrap); cambiaQta(chiaveFn(), 1); });
     meno.addEventListener('click', function (e) { stop(e); cambiaQta(chiaveFn(), -1); });
 
     wrap.aggiorna = function () {
@@ -279,6 +405,7 @@
         e.stopPropagation();
         aggiungi(nome, v.prezzo, v.nome, piccante);
         menu.remove();
+        chiudiPopup();
       });
       menu.appendChild(b);
     });
@@ -363,8 +490,12 @@
         return popupOpzioni ? chiaveEsistente(popupNome) : chiaveDi(popupNome, '');
       },
       function () {
-        if (popupOpzioni) apriSceltaVariante(popupNome, popupOpzioni, popupWrap, popupPiccante);
-        else aggiungi(popupNome, popupPrezzo, '', popupPiccante);
+        if (popupOpzioni) {
+          apriSceltaVariante(popupNome, popupOpzioni, popupWrap, popupPiccante);
+        } else {
+          aggiungi(popupNome, popupPrezzo, '', popupPiccante);
+          chiudiPopup();
+        }
       },
       'cart-btn-wrap cart-btn-wrap--popup'
     );
@@ -422,13 +553,44 @@
       '<span class="cart-fab__t"></span>';
     fab.addEventListener('click', apriPannello);
     document.body.appendChild(fab);
+    posizionaFab();
+    SCHERMO_PICCOLO.addEventListener('change', posizionaFab);
+  }
+
+  /* Da telefono il carrello sta dentro la barra in alto, accanto al menu:
+     e il posto dove viene cercato. Da computer resta flottante in alto a
+     destra, dove non copre niente. Stessa soglia dei 900px del CSS. */
+  var SCHERMO_PICCOLO = window.matchMedia('(max-width: 768px)');
+
+  function posizionaFab() {
+    if (!fab) return;
+    var barra = document.querySelector('.v3-header__inner');
+
+    if (SCHERMO_PICCOLO.matches && barra) {
+      // Prima dell'hamburger, che resta l'ultimo elemento a destra
+      var burger = barra.querySelector('.v3-header__burger');
+      if (fab.parentNode !== barra) barra.insertBefore(fab, burger);
+      fab.classList.add('cart-fab--nav');
+    } else {
+      if (fab.parentNode !== document.body) document.body.appendChild(fab);
+      fab.classList.remove('cart-fab--nav');
+    }
+    aggiornaFab();
   }
 
   function aggiornaFab() {
     if (!fab) return;
     var n = numeroArticoli();
-    fab.hidden = n === 0;
-    fab.querySelector('.cart-fab__n').textContent = n;
+    var nellaBarra = fab.classList.contains('cart-fab--nav');
+    // Nella barra il carrello c'e sempre, anche vuoto: e un punto fisso
+    // dell'interfaccia. Flottante invece comparirebbe sopra i contenuti,
+    // quindi si mostra solo quando serve.
+    fab.hidden = !nellaBarra && n === 0;
+
+    var conteggio = fab.querySelector('.cart-fab__n');
+    conteggio.textContent = n;
+    conteggio.hidden = n === 0;
+
     // Subtotale e non totale: qui si mostra quello che si e aggiunto.
     // La consegna compare nel pannello, dove si conclude l'ordine.
     fab.querySelector('.cart-fab__t').textContent = formatta(subtotale());
@@ -599,7 +761,7 @@
                'aria-label="Richieste per ' + v.nome + '">';
 
       riga.querySelector('[data-a="meno"]').addEventListener('click', function () { cambiaQta(k, -1); });
-      riga.querySelector('[data-a="piu"]').addEventListener('click', function () { cambiaQta(k, 1); });
+      riga.querySelector('[data-a="piu"]').addEventListener('click', function () { cambiaQta(k, 1, true); });
       riga.querySelector('.cart-riga__x').addEventListener('click', function () { rimuovi(k); });
 
       // Piccantezza: aggiorno solo l'evidenziazione dei pulsanti, senza
