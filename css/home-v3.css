@@ -313,7 +313,9 @@ img { max-width: 100%; display: block; }
   background-image: url("../images/grafiche/TEXTURE MENU.png");
   background-repeat: repeat;
   background-blend-mode: multiply;
-  padding: 2.5rem 0 2rem;
+  /* Stesso respiro della gallery: con il racconto completo la sezione ha
+     il peso delle altre, non piu quello di un riquadro di passaggio */
+  padding: 4rem 0 4.5rem;
   overflow: hidden;
 }
 
@@ -326,18 +328,28 @@ img { max-width: 100%; display: block; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
-  align-items: center;
+  /* In alto e non al centro: con il racconto lungo, una foto centrata
+     verticalmente resta sospesa in mezzo al vuoto */
+  align-items: start;
   padding: 0 3rem;
 }
 
 /* Stellina in basso a destra dietro il piatto.
    z-index -1 la manda sotto la foto ma resta dentro il contesto di
    impilamento di __inner, quindi sopra il pattern della sezione. */
+/* A sinistra del piatto e quasi tutta fuori dalla foto: cosi si vede per
+   intero, e solo il bordo destro passa dietro al piatto, giusto per
+   toccarlo. L'altezza e all'incirca quella del piatto, che sta nella
+   meta inferiore dell'immagine. z-index -1 la manda sotto la foto, e
+   l'isolation sul riquadro la trattiene li invece di spedirla dietro
+   allo sfondo della sezione. */
 .v3-graffiti--stella-chisiamo-2 {
-  width: 215px;
-  top: 50%;
-  left: 51%;
+  position: absolute;
+  width: 72%;
+  top: 62%;
+  left: -55%;
   right: auto;
+  bottom: auto;
   z-index: -1;
   transform: translateY(-50%) rotate(12deg);
   filter: brightness(0) invert(1) brightness(0.22);
@@ -346,7 +358,7 @@ img { max-width: 100%; display: block; }
 .v3-chisiamo__text {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 0.9rem;
 }
 
 .v3-chisiamo__title {
@@ -368,7 +380,23 @@ img { max-width: 100%; display: block; }
   font-size: 0.98rem;
   line-height: 1.7;
   color: var(--black);
+  /* Riga corta: oltre i 460px l'occhio fatica a tornare a capo */
   max-width: 460px;
+  margin: 0;
+}
+
+/* Parole in evidenza nel font dei titoli, come nel materiale del cliente.
+   line-height 0 e vertical-align tengono la riga alla stessa altezza
+   delle altre: il font dei titoli e molto piu alto e allargherebbe
+   l'interlinea solo dove compare. */
+.v3-chisiamo__ev {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.45em;
+  line-height: 0;
+  vertical-align: -0.04em;
+  color: var(--red);
+  white-space: nowrap;
 }
 
 .v3-chisiamo__link {
@@ -391,12 +419,21 @@ img { max-width: 100%; display: block; }
 
 .v3-chisiamo__visual {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  /* All'altezza del testo, non del titolo */
+  padding-top: 4.5rem;
 }
 
-.v3-chisiamo__photo img {
-  max-height: 340px;
+.v3-chisiamo__photo {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Piu grande di prima: accanto a cinque paragrafi, 340px sembravano
+   una miniatura */
+.v3-chisiamo__photo > img:last-child {
+  max-height: 430px;
   width: auto;
   display: block;
   filter: drop-shadow(0 6px 18px rgba(0,0,0,0.25));
@@ -1033,16 +1070,15 @@ img { max-width: 100%; display: block; }
     gap: 1.5rem;
   }
   .v3-chisiamo__photo { order: -1; }
-  .v3-chisiamo__photo img { max-height: 240px; }
+  .v3-chisiamo__photo > img:last-child { max-height: 240px; }
+  /* A colonna singola la foto sta sopra il testo: niente spinta dall'alto */
+  .v3-chisiamo__visual { padding-top: 0; }
 
-  /* Annulla il centraggio verticale della versione desktop */
+  /* A colonna singola a sinistra c'e meno spazio: la stellina rientra,
+     altrimenti finirebbe fuori dallo schermo */
   .v3-graffiti--stella-chisiamo-2 {
-    width: 90px;
-    right: auto;
-    left: 3%;
-    top: auto;
-    bottom: 6%;
-    transform: rotate(12deg);
+    width: 50%;
+    left: -28%;
   }
 
   /* Gallery */
@@ -1133,7 +1169,7 @@ img { max-width: 100%; display: block; }
   .v3-hero__title { font-size: clamp(3.5rem, 20vw, 6rem); }
 
   .v3-chisiamo__inner { padding: 0 1rem; gap: 1rem; }
-  .v3-chisiamo__photo img { max-height: 180px; }
+  .v3-chisiamo__photo > img:last-child { max-height: 180px; }
 
   .v3-bestseller { padding: 2rem 1rem 3rem; }
   .v3-bestseller__grid { gap: 1.5rem; }
