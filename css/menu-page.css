@@ -515,16 +515,14 @@ img.mp-nav__icon {
     justify-content: center;
     width: 2.4rem;
     padding: 0;
-    /* Stesso riquadro arrotondato della categoria attiva: il rosso pieno
-       sotto serve a nascondere le voci che le passano dietro, la velatura
-       chiara sopra le da la forma. L'ombra piena (spread, nessuna
-       sfocatura) riempie di rosso lo spazio fino al bordo della barra,
-       altrimenti da li si vedrebbero spuntare le icone. */
+    /* Nessun riquadro: solo la frecciolina bianca sul rosso della barra.
+       Il fondo rosso pieno serve lo stesso, per fermare le voci che
+       scorrerebbero sotto, ma essendo dello stesso colore non si vede:
+       sembra che la fila finisca li. */
     background-color: var(--color-red);
-    background-image: linear-gradient(rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.18));
-    box-shadow: 0 0 0 0.5rem var(--color-red);
+    box-shadow: 0 0 0 0.45rem var(--color-red);
     border: none;
-    border-radius: 12px;
+    border-radius: 0;
     color: #fff;
     cursor: pointer;
     z-index: 3;
