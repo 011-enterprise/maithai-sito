@@ -506,23 +506,24 @@ img.mp-nav__icon {
      ferma all'estremita destra mentre le categorie le scorrono sotto.
      Sfondo rosso pieno, altrimenti si vedrebbero passare. */
   .mp-nav__freccia {
+    /* Attaccata al bordo e alta quanto la barra, con lo stesso angolo
+       arrotondato in alto a destra: cosi il rosso che ferma le voci
+       scorrevoli resta dentro la barra. Prima lo stesso lavoro lo faceva
+       un'ombra piena, che pero era squadrata e sbordava dall'angolo. */
     position: absolute;
-    top: 0.5rem;
-    bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
-    right: 0.5rem;
+    top: 0;
+    bottom: 0;
+    right: 0;
     display: none;
     align-items: center;
     justify-content: center;
-    width: 2.4rem;
-    padding: 0;
-    /* Nessun riquadro: solo la frecciolina bianca sul rosso della barra.
-       Il fondo rosso pieno serve lo stesso, per fermare le voci che
-       scorrerebbero sotto, ma essendo dello stesso colore non si vede:
-       sembra che la fila finisca li. */
+    width: 3rem;
+    padding: 0 0.5rem 0 0;
+    /* Solo la frecciolina bianca: il fondo e lo stesso rosso della barra,
+       quindi non si vede, e la fila sembra finire li. */
     background-color: var(--color-red);
-    box-shadow: 0 0 0 0.45rem var(--color-red);
     border: none;
-    border-radius: 0;
+    border-radius: 0 16px 0 0;
     color: #fff;
     cursor: pointer;
     z-index: 3;
