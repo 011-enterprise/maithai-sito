@@ -1077,16 +1077,31 @@ img { max-width: 100%; display: block; }
     padding: 0 1.5rem;
     gap: 1.5rem;
   }
-  .v3-chisiamo__photo { order: -1; }
-  .v3-chisiamo__photo > img:last-child { max-height: 240px; }
+  .v3-chisiamo__photo {
+    order: -1;
+    width: 100%;
+    max-width: 380px;
+  }
+
+  /* A colonna singola la foto ha tutta la larghezza a disposizione:
+     tenerla a 240px di altezza la faceva sembrare una miniatura. Cresce
+     con lo schermo, fino alla misura del file (760px). */
+  .v3-chisiamo__photo > img:last-child {
+    width: 100%;
+    height: auto;
+    max-height: none;
+  }
+
   /* A colonna singola la foto sta sopra il testo: niente spinta dall'alto */
   .v3-chisiamo__visual { padding-top: 0; }
 
-  /* A colonna singola a sinistra c'e meno spazio: la stellina rientra,
-     altrimenti finirebbe fuori dallo schermo */
+  /* Qui la stellina non puo stare di lato: a sinistra c'e il testo, e le
+     finirebbe dietro. Va dentro la foto, piu piccola, dietro al piatto. */
   .v3-graffiti--stella-chisiamo-2 {
-    width: 50%;
-    left: -28%;
+    width: 58%;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(12deg);
   }
 
   /* Gallery */
@@ -1177,7 +1192,9 @@ img { max-width: 100%; display: block; }
   .v3-hero__title { font-size: clamp(3.5rem, 20vw, 6rem); }
 
   .v3-chisiamo__inner { padding: 0 1rem; gap: 1rem; }
-  .v3-chisiamo__photo > img:last-child { max-height: 180px; }
+  /* Sugli schermi piu stretti la foto resta comunque grande: occupa la
+     larghezza della colonna, meno i margini */
+  .v3-chisiamo__photo { max-width: 320px; }
 
   .v3-bestseller { padding: 2rem 1rem 3rem; }
   .v3-bestseller__grid { gap: 1.5rem; }
