@@ -6,3 +6,7 @@
 # images/hero.mp4. Tenerlo nel repository lo appesantirebbe per sempre,
 # anche cancellandolo dopo, perche resterebbe nella storia di git.
 images/video hero.mp4
+
+# Originali delle foto sedi: PNG da 20-38 MB usciti da Xfield.
+# Sul sito vanno i JPG ridotti accanto a loro, questi restano solo sul disco.
+images/sedi/*.png
