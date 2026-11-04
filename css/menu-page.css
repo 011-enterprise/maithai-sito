@@ -515,14 +515,30 @@ img.mp-nav__icon {
     justify-content: center;
     width: 2.4rem;
     padding: 0;
+    /* Stesso riquadro arrotondato della categoria attiva: il rosso pieno
+       sotto serve a nascondere le voci che le passano dietro, la velatura
+       chiara sopra le da la forma. L'ombra piena (spread, nessuna
+       sfocatura) riempie di rosso lo spazio fino al bordo della barra,
+       altrimenti da li si vedrebbero spuntare le icone. */
     background-color: var(--color-red);
+    background-image: linear-gradient(rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.18));
+    box-shadow: 0 0 0 0.5rem var(--color-red);
     border: none;
-    border-left: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 0;
+    border-radius: 12px;
     color: #fff;
     cursor: pointer;
     z-index: 3;
+    -webkit-tap-highlight-color: transparent;
     transition: transform 0.25s ease;
+  }
+
+  /* Il contorno blu di sistema al tocco: resta solo per chi naviga da
+     tastiera, e in bianco perche si veda sul rosso */
+  .mp-nav__freccia:focus { outline: none; }
+
+  .mp-nav__freccia:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
   }
 
   .mp-nav.is-scorrevole .mp-nav__freccia { display: flex; }
