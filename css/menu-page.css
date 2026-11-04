@@ -506,13 +506,12 @@ img.mp-nav__icon {
      ferma all'estremita destra mentre le categorie le scorrono sotto.
      Sfondo rosso pieno, altrimenti si vedrebbero passare. */
   .mp-nav__freccia {
-    /* Attaccata al bordo e alta quanto la barra, con lo stesso angolo
-       arrotondato in alto a destra: cosi il rosso che ferma le voci
-       scorrevoli resta dentro la barra. Prima lo stesso lavoro lo faceva
-       un'ombra piena, che pero era squadrata e sbordava dall'angolo. */
+    /* Alta quanto le voci, non quanto la barra: sopra e sotto resta il
+       respiro della barra, come per le categorie. Li non passa nessuna
+       icona, quindi non serve coprire piu di cosi. */
     position: absolute;
-    top: 0;
-    bottom: 0;
+    top: 0.5rem;
+    bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
     right: 0;
     display: none;
     align-items: center;
@@ -523,7 +522,7 @@ img.mp-nav__icon {
        quindi non si vede, e la fila sembra finire li. */
     background-color: var(--color-red);
     border: none;
-    border-radius: 0 16px 0 0;
+    border-radius: 0;
     color: #fff;
     cursor: pointer;
     z-index: 3;
