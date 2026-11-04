@@ -492,37 +492,61 @@ img.mp-nav__icon {
 
   .mp-nav__inner::-webkit-scrollbar { display: none; }
 
-  /* Sfumature sui bordi: dicono che la fila continua oltre lo schermo.
-     Stanno sulla barra, non sul contenitore che scorre, altrimenti
-     scorrerebbero via insieme alle voci. */
-  .mp-nav::before,
-  .mp-nav::after {
-    content: '';
+  /* Niente piu sfumature ai bordi: il velo rosso sbordava dall'angolo
+     arrotondato (l'ombra squadrata dietro "Seafood"), e una maschera
+     avrebbe reso semitrasparente proprio la zona della freccia. Il
+     segnale ora e la freccia qui sotto, piu chiara di una sfumatura. */
+
+  /* ----- Freccia sul bordo destro -----
+     Sta sopra la barra e le toglie il posto di una categoria: e questo
+     che fa capire al volo che la fila prosegue. Compare solo quando c'e
+     davvero altro da vedere (classe messa da menu-page.js). */
+  .mp-nav__freccia {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 2.5rem;
-    pointer-events: none;
-    z-index: 2;
-    transition: opacity 0.25s ease;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    padding: 0;
+    background-color: var(--color-white);
+    border: none;
+    border-radius: 50%;
+    color: var(--color-red);
+    cursor: pointer;
+    z-index: 3;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    transition: transform 0.25s ease;
   }
 
-  .mp-nav::after {
-    right: 0;
-    background: linear-gradient(to right, rgba(227, 13, 24, 0), var(--color-red) 75%);
-    border-radius: 0 16px 0 0;
+  .mp-nav.is-scorrevole .mp-nav__freccia { display: flex; }
+
+  .mp-nav__freccia svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    display: block;
   }
 
-  /* A sinistra compare solo dopo che si e scorso */
-  .mp-nav::before {
-    left: 0;
-    background: linear-gradient(to left, rgba(227, 13, 24, 0), var(--color-red) 75%);
-    border-radius: 16px 0 0 0;
-    opacity: 0;
+  /* In fondo alla fila si gira: riporta all'inizio */
+  .mp-nav.is-in-fondo .mp-nav__freccia {
+    transform: translateY(-50%) rotate(180deg);
   }
 
-  .mp-nav.is-scorso::before { opacity: 1; }
-  .mp-nav.is-in-fondo::after { opacity: 0; }
+  .mp-nav__freccia:active { opacity: 0.7; }
+
+  /* Lo spazio per la freccia, cosi l'ultima categoria non le finisce
+     sotto quando si scorre fino in fondo */
+  .mp-nav__inner,
+  .mp-nav.is-sidebar .mp-nav__inner {
+    padding-right: 3.1rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mp-nav__freccia { transition: none; }
+  }
 
   .mp-nav__link,
   .mp-nav.is-sidebar .mp-nav__link {

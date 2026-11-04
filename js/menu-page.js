@@ -6,6 +6,49 @@
 
   if (!sections.length || !navLinks.length || !nav) return;
 
+  const barra = nav.querySelector('.mp-nav__inner');
+
+  /* La categoria attiva viene portata in vista dentro la barra.
+
+     Qui non si usa scrollIntoView: quello muove tutti i contenitori che
+     scorrono, finestra compresa, e scorrendo la pagina partiva in
+     continuazione strappando la barra di mano a chi la stava
+     trascinando. scrollLeft muove solo la barra.
+
+     In piu non si muove niente se la voce e gia visibile, e si sta
+     fermi mentre il dito e sulla barra. */
+  let ditoSullaBarra = false;
+  let liberaDito;
+
+  if (barra) {
+    barra.addEventListener('touchstart', () => {
+      ditoSullaBarra = true;
+      clearTimeout(liberaDito);
+    }, { passive: true });
+
+    barra.addEventListener('touchend', () => {
+      // Un attimo di tregua dopo il tocco: il dito lascia ma lo
+      // scorrimento per inerzia continua
+      clearTimeout(liberaDito);
+      liberaDito = setTimeout(() => { ditoSullaBarra = false; }, 1500);
+    }, { passive: true });
+  }
+
+  function portaInVista(link, animato) {
+    if (!barra || ditoSullaBarra) return;
+
+    const v = link.getBoundingClientRect();
+    const b = barra.getBoundingClientRect();
+    // Gia leggibile per intero: non si tocca niente
+    if (v.left >= b.left + 8 && v.right <= b.right - 8) return;
+
+    const meta = (barra.clientWidth - link.offsetWidth) / 2;
+    barra.scrollTo({
+      left: link.offsetLeft - meta,
+      behavior: animato ? 'smooth' : 'auto'
+    });
+  }
+
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -14,12 +57,7 @@
           navLinks.forEach((link) => {
             const attiva = link.getAttribute('href') === `#${id}`;
             link.classList.toggle('active', attiva);
-            // Da telefono la barra scorre: la categoria in cui ci si trova
-            // potrebbe essere fuori vista, quindi la si porta al centro.
-            // block: 'nearest' per non muovere anche la pagina.
-            if (attiva && window.matchMedia('(max-width: 768px)').matches) {
-              link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
+            if (attiva) portaInVista(link, true);
           });
         }
       });
@@ -29,11 +67,8 @@
 
   sections.forEach((section) => observer.observe(section));
 
-  // Smooth scroll nav links — scroll active link into view in the nav bar
   navLinks.forEach((link) => {
-    link.addEventListener('click', () => {
-      link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    });
+    link.addEventListener('click', () => portaInVista(link, true));
   });
 
   // Inietta le icone nei link dalla nav (visibili sempre)
@@ -52,42 +87,61 @@
   // non deve girare. Resta solo l'evidenziazione della categoria attiva.
   const DA_TELEFONO = window.matchMedia('(max-width: 768px)');
 
-  /* ----- Segnali che la fila delle categorie continua di lato -----
-     Le sfumature sui bordi si accendono e si spengono a seconda di dove
-     si e arrivati: a destra finche c'e altro, a sinistra appena ci si
-     sposta. In piu, la prima volta che si apre la pagina, la barra fa un
-     piccolo movimento: e il modo piu diretto per dire che si trascina. */
-  const inner = nav.querySelector('.mp-nav__inner');
+  /* ----- La fila continua di lato -----
+     Una freccia fissa sul bordo destro: occupa il posto di una categoria,
+     e proprio questo fa capire che la fila prosegue oltre. Si puo anche
+     toccare, e fa scorrere di quasi una schermata. Arrivati in fondo si
+     gira dall'altra parte e riporta all'inizio.
+     Le sfumature ai bordi restano come rinforzo (vedi menu-page.css). */
 
-  function aggiornaSfumature() {
-    if (!inner) return;
-    const massimo = inner.scrollWidth - inner.clientWidth;
-    nav.classList.toggle('is-scorso', inner.scrollLeft > 4);
-    nav.classList.toggle('is-in-fondo', massimo <= 4 || inner.scrollLeft >= massimo - 4);
+  let freccia;
+
+  function creaFreccia() {
+    if (!barra || freccia) return;
+    freccia = document.createElement('button');
+    freccia.type = 'button';
+    freccia.className = 'mp-nav__freccia';
+    freccia.setAttribute('aria-label', 'Mostra le altre categorie');
+    freccia.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" ' +
+           'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<polyline points="9 18 15 12 9 6"></polyline>' +
+      '</svg>';
+
+    freccia.addEventListener('click', () => {
+      const passo = barra.clientWidth * 0.75;
+      const inFondo = nav.classList.contains('is-in-fondo');
+      barra.scrollTo({
+        left: inFondo ? 0 : barra.scrollLeft + passo,
+        behavior: 'smooth'
+      });
+    });
+
+    nav.appendChild(freccia);
   }
 
-  if (inner) {
-    inner.addEventListener('scroll', aggiornaSfumature, { passive: true });
-    window.addEventListener('resize', aggiornaSfumature, { passive: true });
-    aggiornaSfumature();
+  function aggiornaFreccia() {
+    if (!barra) return;
+    const massimo = barra.scrollWidth - barra.clientWidth;
+    const scorre = massimo > 4;
+
+    nav.classList.toggle('is-in-fondo', !scorre || barra.scrollLeft >= massimo - 4);
+    // Se le categorie ci stanno tutte la freccia non ha senso
+    nav.classList.toggle('is-scorrevole', scorre);
+
+    if (freccia) {
+      freccia.setAttribute('aria-label',
+        nav.classList.contains('is-in-fondo') ? 'Torna alla prima categoria' : 'Mostra le altre categorie');
+    }
   }
 
-  function accennaScorrimento() {
-    if (!inner || !DA_TELEFONO.matches) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (inner.scrollWidth - inner.clientWidth < 20) return;   // ci sta tutto
-    try {
-      if (sessionStorage.getItem('maithai-filtri-visto')) return;
-      sessionStorage.setItem('maithai-filtri-visto', '1');
-    } catch (e) { /* navigazione privata: l'accenno si rivede, poco male */ }
-
-    setTimeout(() => {
-      inner.scrollTo({ left: 56, behavior: 'smooth' });
-      setTimeout(() => inner.scrollTo({ left: 0, behavior: 'smooth' }), 650);
-    }, 900);
+  if (barra) {
+    creaFreccia();
+    barra.addEventListener('scroll', aggiornaFreccia, { passive: true });
+    window.addEventListener('resize', aggiornaFreccia, { passive: true });
+    window.addEventListener('load', aggiornaFreccia);
+    aggiornaFreccia();
   }
-
-  window.addEventListener('load', accennaScorrimento);
 
   // Sidebar: slide in da sinistra dopo scroll
   let navNaturalTop = 0;
