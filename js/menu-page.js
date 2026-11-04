@@ -141,7 +141,6 @@
   // Sidebar: slide in da sinistra dopo scroll
   let navNaturalTop = 0;
   let isSidebar = false;
-  let isAnimating = false;
   const HEADER_H = 100;   // altezza header desktop
   const EXTRA_SCROLL = 0;
   const HYSTERESIS = 80;
@@ -169,42 +168,23 @@
     isSidebar = true;
   }
 
+  /* Il passaggio era in tre tempi: la barra in alto sfumava via, si
+     aspettavano 300 millisecondi, poi entrava la laterale. Tre movimenti
+     in fila si leggono come uno scatto. Ora la barra in alto resta dove
+     e fino al punto di passaggio, e il suo posto lo prende la laterale
+     che entra scivolando: un movimento solo. */
   function enterSidebar() {
-    if (isSidebar || isAnimating) return;
-    isAnimating = true;
-    // Fade out barra orizzontale
-    nav.style.opacity = '0';
-    setTimeout(() => {
-      // Switch a sidebar (già invisibile + fuori schermo)
-      nav.classList.add('is-sidebar');
-      nav.style.opacity = '';
-      nav.offsetHeight; // force reflow
-      // Slide in + fade in sovrapposti
-      requestAnimationFrame(() => {
-        nav.classList.add('is-visible');
-      });
-      isSidebar = true;
-      setTimeout(() => { isAnimating = false; }, 750);
-    }, 300);
+    if (isSidebar) return;
+    nav.classList.add('is-sidebar');
+    nav.offsetHeight;                 // forza il ricalcolo, se no non scivola
+    requestAnimationFrame(() => nav.classList.add('is-visible'));
+    isSidebar = true;
   }
 
   function exitSidebar() {
-    if (!isSidebar || isAnimating) return;
-    isAnimating = true;
-    // Slide out + fade out sidebar
-    nav.classList.remove('is-visible');
-    setTimeout(() => {
-      // Ripristina barra orizzontale partendo invisibile
-      nav.classList.remove('is-sidebar');
-      nav.style.opacity = '0';
-      nav.offsetHeight;
-      // Fade in barra
-      requestAnimationFrame(() => {
-        nav.style.opacity = '';
-      });
-      isSidebar = false;
-      setTimeout(() => { isAnimating = false; }, 450);
-    }, 500);
+    if (!isSidebar) return;
+    nav.classList.remove('is-sidebar', 'is-visible');
+    isSidebar = false;
   }
 
   function updateNavPosition() {
@@ -229,7 +209,6 @@
       nav.style.opacity = '';
       nav.style.transition = '';
       isSidebar = false;
-      isAnimating = false;
       return;
     }
 
