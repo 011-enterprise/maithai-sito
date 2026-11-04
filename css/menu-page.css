@@ -501,38 +501,41 @@ img.mp-nav__icon {
      Sta sopra la barra e le toglie il posto di una categoria: e questo
      che fa capire al volo che la fila prosegue. Compare solo quando c'e
      davvero altro da vedere (classe messa da menu-page.js). */
+  /* Niente pastiglia bianca tonda: sarebbe uguale al pulsante "torna in
+     cima" che compare poco sopra. E una voce della barra come le altre,
+     ferma all'estremita destra mentre le categorie le scorrono sotto.
+     Sfondo rosso pieno, altrimenti si vedrebbero passare. */
   .mp-nav__freccia {
     position: absolute;
-    top: 50%;
+    top: 0.5rem;
+    bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
     right: 0.5rem;
-    transform: translateY(-50%);
     display: none;
     align-items: center;
     justify-content: center;
-    width: 2.1rem;
-    height: 2.1rem;
+    width: 2.4rem;
     padding: 0;
-    background-color: var(--color-white);
+    background-color: var(--color-red);
     border: none;
-    border-radius: 50%;
-    color: var(--color-red);
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 0;
+    color: #fff;
     cursor: pointer;
     z-index: 3;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
     transition: transform 0.25s ease;
   }
 
   .mp-nav.is-scorrevole .mp-nav__freccia { display: flex; }
 
   .mp-nav__freccia svg {
-    width: 1.1rem;
-    height: 1.1rem;
+    width: 1.25rem;
+    height: 1.25rem;
     display: block;
   }
 
   /* In fondo alla fila si gira: riporta all'inizio */
   .mp-nav.is-in-fondo .mp-nav__freccia {
-    transform: translateY(-50%) rotate(180deg);
+    transform: rotate(180deg);
   }
 
   .mp-nav__freccia:active { opacity: 0.7; }
