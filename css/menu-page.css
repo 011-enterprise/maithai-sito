@@ -522,7 +522,10 @@ img.mp-nav__icon {
        quindi non si vede, e la fila sembra finire li. */
     background-color: var(--color-red);
     border: none;
-    border-radius: 0;
+    /* Stesso raggio della barra sull'angolo in alto a destra: con
+       l'angolo vivo la freccia copriva la curva e il bordo sembrava
+       squadrato, mentre a sinistra era tondo */
+    border-radius: 0 16px 0 0;
     color: #fff;
     cursor: pointer;
     z-index: 3;
