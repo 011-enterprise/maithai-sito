@@ -1084,3 +1084,32 @@
     height: 1.6rem;
   }
 }
+
+/* Il riso in aggiunta: non una variante scritta in piccolo, ma una riga
+   in evidenza con il suo prezzo. Chi ha scelto "Con riso" deve ritrovare
+   i 3 euro nel carrello, non scoprirli nel totale. */
+.cart-riga__extra {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.2rem;
+  padding: 0.15rem 0.5rem;
+  background-color: var(--color-yellow);
+  color: var(--color-black);
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* La riga del riso nei conti: rientrata e piu piccola, perche e un
+   dettaglio dentro il totale piatti, non una voce che si somma. */
+.cart-conti__riso {
+  padding-top: 0;
+  padding-left: 0.9rem;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: rgba(56, 62, 66, 0.6);
+}
+
+.cart-conti__riso[hidden] { display: none; }

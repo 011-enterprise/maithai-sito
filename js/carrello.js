@@ -53,6 +53,8 @@
      Gli id sono quelli delle sezioni di menu.html. */
   var SEZIONI_CON_RISO = ['curry', 'seafood', 'carni'];
   var PREZZO_RISO = 3.00;
+  // Serve anche al carrello per riconoscere l'aggiunta e mostrarla a parte
+  var VARIANTE_RISO = 'con riso';
 
   /* ---------- CONDIZIONI DI CONSEGNA ----------
      Il minimo si calcola sui soli piatti: sommarci la consegna
@@ -275,6 +277,15 @@
     }, 0);
   }
 
+  // Quanto pesa il riso in aggiunta: si mostra nei conti, cosi la
+  // differenza rispetto ai prezzi del menu ha un perche
+  function totaleRiso() {
+    return Object.keys(carrello).reduce(function (t, k) {
+      var v = carrello[k];
+      return v.variante === VARIANTE_RISO ? t + PREZZO_RISO * v.qta : t;
+    }, 0);
+  }
+
   // Sopra la soglia la consegna non si paga. Si misura sui piatti, come
   // il minimo: sommarci la consegna stessa sarebbe circolare.
   function costoConsegna() {
@@ -396,7 +407,7 @@
     if (sezione && SEZIONI_CON_RISO.indexOf(sezione.id) !== -1) {
       var base = leggiPrezzo(nodoPrezzo.textContent);
       var conRiso = [
-        { nome: 'Con riso', prezzo: base + PREZZO_RISO, variante: 'con riso' },
+        { nome: 'Con riso', prezzo: base + PREZZO_RISO, variante: VARIANTE_RISO },
         { nome: 'Senza riso', prezzo: base, variante: '' }
       ];
       // La domanda sta sopra le due scelte: senza, i due prezzi diversi
@@ -676,6 +687,11 @@
         '<button type="button" class="cart-panel__svuota">Svuota carrello</button>' +
         '<div class="cart-conti">' +
           '<div class="cart-conti__r"><span>Totale piatti</span><span class="cart-conti__sub"></span></div>' +
+          // Compare solo se c'e del riso: ricorda da dove arriva la
+          // differenza rispetto ai prezzi del menu
+          '<div class="cart-conti__r cart-conti__riso" hidden>' +
+            '<span>di cui riso aggiunto</span><span class="cart-conti__riso-tot"></span>' +
+          '</div>' +
           '<div class="cart-conti__r"><span>Consegna</span><span class="cart-conti__cons"></span></div>' +
           '<div class="cart-panel__tot"><span>Totale</span><strong></strong></div>' +
           '<p class="cart-conti__minimo" hidden></p>' +
@@ -824,7 +840,12 @@
         '<div class="cart-riga__alto">' +
           '<div class="cart-riga__testo">' +
             '<span class="cart-riga__nome">' + v.nome + '</span>' +
-            (v.variante ? '<span class="cart-riga__var">' + v.variante + '</span>' : '') +
+            // Il riso non e una variante del piatto ma un'aggiunta che
+            // costa: si scrive col suo prezzo e in evidenza, cosi il
+            // totale non arriva come una sorpresa alla fine.
+            (v.variante === VARIANTE_RISO
+              ? '<span class="cart-riga__extra">+ Riso ' + formatta(PREZZO_RISO) + '</span>'
+              : (v.variante ? '<span class="cart-riga__var">' + v.variante + '</span>' : '')) +
           '</div>' +
           '<div class="cart-qta cart-qta--riga">' +
             '<button type="button" class="cart-qta__btn" data-a="meno" aria-label="Togli uno">−</button>' +
@@ -880,6 +901,13 @@
     });
 
     pannello.querySelector('.cart-conti__sub').textContent = formatta(subtotale());
+
+    var riso = totaleRiso();
+    var rigaRiso = pannello.querySelector('.cart-conti__riso');
+    rigaRiso.hidden = riso === 0;
+    if (riso > 0) {
+      pannello.querySelector('.cart-conti__riso-tot').textContent = formatta(riso);
+    }
 
     var cons = pannello.querySelector('.cart-conti__cons');
     cons.textContent = consegnaGratis() ? 'Gratuita' : formatta(costoConsegna());
@@ -1054,7 +1082,14 @@
     // in cucina si vede subito a quale piatto appartiene.
     Object.keys(carrello).forEach(function (k) {
       var v = carrello[k];
-      var etichetta = v.variante ? v.nome + ' (' + v.variante + ')' : v.nome;
+      var etichetta = v.nome;
+      if (v.variante === VARIANTE_RISO) {
+        // Esplicito anche nel messaggio: in cucina si vede che c'e il riso
+        // da aggiungere, e il cliente ritrova la cifra che ha visto
+        etichetta += ' (+ riso ' + formatta(PREZZO_RISO) + ')';
+      } else if (v.variante) {
+        etichetta += ' (' + v.variante + ')';
+      }
       // La scala "/3" evita che il numero da solo resti ambiguo in cucina
       if (v.piccante !== null && v.piccante !== undefined) {
         etichetta += ' · piccantezza ' + v.piccante + '/3';
