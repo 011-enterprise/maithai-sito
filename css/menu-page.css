@@ -540,7 +540,9 @@ img.mp-nav__icon {
     outline-offset: 2px;
   }
 
-  .mp-nav.is-scorrevole .mp-nav__freccia { display: flex; }
+  /* Solo da fermi, all'inizio della fila: appena si scorre sparisce e
+     lascia il posto alle categorie, visto che a quel punto si e capito */
+  .mp-nav.is-scorrevole.is-inizio .mp-nav__freccia { display: flex; }
 
   .mp-nav__freccia svg {
     width: 1.25rem;
@@ -549,31 +551,33 @@ img.mp-nav__icon {
   }
 
   /* In fondo alla fila si gira: riporta all'inizio */
-  .mp-nav.is-in-fondo .mp-nav__freccia {
-    transform: rotate(180deg);
-  }
 
   .mp-nav__freccia:active { opacity: 0.7; }
 
-  /* Lo spazio per la freccia, cosi l'ultima categoria non le finisce
-     sotto quando si scorre fino in fondo */
-  .mp-nav__inner,
-  .mp-nav.is-sidebar .mp-nav__inner {
-    padding-right: 3.1rem;
-  }
 
   @media (prefers-reduced-motion: reduce) {
     .mp-nav__freccia { transition: none; }
   }
 
+  /* Quattro voci esatte nello spazio che resta a sinistra della freccia:
+     la quinta comincia dietro di lei, quindi non si vede spuntare mezza
+     parola. Le scritte piu lunghe vengono troncate. */
   .mp-nav__link,
   .mp-nav.is-sidebar .mp-nav__link {
-    flex: 0 0 auto;
+    flex: 0 0 calc((100% - 3rem) / 4);
+    min-width: 0;
     gap: 0.25rem;
     font-size: 0.6rem;
     letter-spacing: 0.04em;
-    padding: 0.4rem 0.55rem;
+    padding: 0.4rem 0.4rem;
     border-radius: 12px;
+  }
+
+  .mp-nav__link-text {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* La voce in cui ci si trova si stacca dalle altre */

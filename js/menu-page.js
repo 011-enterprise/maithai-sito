@@ -108,13 +108,9 @@
         '<polyline points="9 18 15 12 9 6"></polyline>' +
       '</svg>';
 
+    // Si puo anche toccare, per chi non pensa a trascinare
     freccia.addEventListener('click', () => {
-      const passo = barra.clientWidth * 0.75;
-      const inFondo = nav.classList.contains('is-in-fondo');
-      barra.scrollTo({
-        left: inFondo ? 0 : barra.scrollLeft + passo,
-        behavior: 'smooth'
-      });
+      barra.scrollTo({ left: barra.clientWidth * 0.75, behavior: 'smooth' });
     });
 
     nav.appendChild(freccia);
@@ -122,17 +118,13 @@
 
   function aggiornaFreccia() {
     if (!barra) return;
-    const massimo = barra.scrollWidth - barra.clientWidth;
-    const scorre = massimo > 4;
+    const scorre = barra.scrollWidth - barra.clientWidth > 4;
 
-    nav.classList.toggle('is-in-fondo', !scorre || barra.scrollLeft >= massimo - 4);
     // Se le categorie ci stanno tutte la freccia non ha senso
     nav.classList.toggle('is-scorrevole', scorre);
-
-    if (freccia) {
-      freccia.setAttribute('aria-label',
-        nav.classList.contains('is-in-fondo') ? 'Torna alla prima categoria' : 'Mostra le altre categorie');
-    }
+    // Compare solo da ferma all'inizio: appena si scorre ha gia detto
+    // quello che doveva dire, e il posto serve alle categorie
+    nav.classList.toggle('is-inizio', barra.scrollLeft <= 4);
   }
 
   if (barra) {
