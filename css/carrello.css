@@ -321,9 +321,19 @@
 
 /* z-index 400: sopra il popup piatto (300), perche puo essere aperto
    mentre quello e a video. */
+/* height in dvh e non inset: 0.
+   Su iPhone un elemento fisso si misura sulla finestra "grande", quella
+   senza le barre di Safari: il fondo del pannello finisce cosi sotto la
+   barra degli indirizzi e la cima esce dallo schermo, portandosi via la
+   X. dvh invece segue la parte davvero visibile. La riga in vh resta
+   come ripiego per i browser che non conoscono dvh. */
 .cart-panel {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  height: 100dvh;
   z-index: 400;
   display: none;
 }
@@ -344,8 +354,11 @@
   right: 0;
   bottom: 0;
   max-height: 92vh;
+  max-height: 92dvh;
   overflow-y: auto;
-  padding: 1.25rem 1.1rem 2rem;
+  /* In fondo lo spazio della barra di sistema degli iPhone senza tasto
+     home, altrimenti l'ultimo pulsante ci finisce sotto */
+  padding: 1.25rem 1.1rem calc(2rem + env(safe-area-inset-bottom, 0px));
   background-color: var(--color-white);
   border-radius: 16px 16px 0 0;
   animation: cart-su 0.28s cubic-bezier(0.22, 1, 0.36, 1);

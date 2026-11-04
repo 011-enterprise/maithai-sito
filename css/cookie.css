@@ -19,6 +19,7 @@
   bottom: 0;
   z-index: 500;               /* sopra carrello (200) e pannello carrello (400) */
   padding: 1rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
   display: flex;
   justify-content: center;
   pointer-events: none;       /* il sito resta usabile ai lati del banner */
@@ -346,6 +347,7 @@ label.cookie__categoria-testa {
 @media (max-width: 600px) {
   .cookie {
     padding: 0.6rem;
+    padding-bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px));
   }
 
   .cookie__box {

@@ -985,7 +985,13 @@ img { max-width: 100%; display: block; }
 .v3-nav-mobile {
   display: none;
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* dvh: con inset 0 le voci restano centrate sulla finestra senza
+     barre, quindi su iPhone scendono sotto quella degli indirizzi */
+  height: 100vh;
+  height: 100dvh;
   z-index: 100;
   background-color: var(--red);
   flex-direction: column;
