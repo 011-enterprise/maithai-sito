@@ -506,26 +506,22 @@ img.mp-nav__icon {
      ferma all'estremita destra mentre le categorie le scorrono sotto.
      Sfondo rosso pieno, altrimenti si vedrebbero passare. */
   .mp-nav__freccia {
-    /* Alta quanto le voci, non quanto la barra: sopra e sotto resta il
-       respiro della barra, come per le categorie. Li non passa nessuna
-       icona, quindi non serve coprire piu di cosi. */
-    position: absolute;
-    top: 0.5rem;
-    bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    /* Ultima voce della fila, agganciata al bordo destro: resta ferma
+       mentre le categorie le scorrono dietro. Essendo dentro la barra,
+       e la barra a ritagliarla: non puo sbordare dall'angolo tondo. */
+    position: sticky;
     right: 0;
+    flex: 0 0 3rem;
+    align-self: stretch;
     display: none;
     align-items: center;
     justify-content: center;
-    width: 3rem;
-    padding: 0 0.5rem 0 0;
+    padding: 0;
     /* Solo la frecciolina bianca: il fondo e lo stesso rosso della barra,
        quindi non si vede, e la fila sembra finire li. */
     background-color: var(--color-red);
     border: none;
-    /* Stesso raggio della barra sull'angolo in alto a destra: con
-       l'angolo vivo la freccia copriva la curva e il bordo sembrava
-       squadrato, mentre a sinistra era tondo */
-    border-radius: 0 16px 0 0;
+    border-radius: 0;
     color: #fff;
     cursor: pointer;
     z-index: 3;
@@ -542,9 +538,14 @@ img.mp-nav__icon {
     outline-offset: 2px;
   }
 
-  /* Solo da fermi, all'inizio della fila: appena si scorre sparisce e
-     lascia il posto alle categorie, visto che a quel punto si e capito */
-  .mp-nav.is-scorrevole.is-inizio .mp-nav__freccia { display: flex; }
+  .mp-nav.is-scorrevole .mp-nav__freccia { display: flex; }
+
+  /* Appena si scorre sparisce: ha gia detto quello che doveva dire.
+     Resta il suo posto nella fila, altrimenti le voci scatterebbero di
+     lato proprio mentre le stai trascinando. */
+  .mp-nav.is-scorrevole:not(.is-inizio) .mp-nav__freccia {
+    visibility: hidden;
+  }
 
   .mp-nav__freccia svg {
     width: 1.25rem;
@@ -566,7 +567,8 @@ img.mp-nav__icon {
      parola. Le scritte piu lunghe vengono troncate. */
   .mp-nav__link,
   .mp-nav.is-sidebar .mp-nav__link {
-    flex: 0 0 calc((100% - 3rem) / 4);
+    /* 3rem sono della freccia, 0.6rem i quattro spazi fra le voci */
+    flex: 0 0 calc((100% - 3rem - 0.6rem) / 4);
     min-width: 0;
     gap: 0.25rem;
     font-size: 0.6rem;

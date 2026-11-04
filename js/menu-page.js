@@ -113,7 +113,10 @@
       barra.scrollTo({ left: barra.clientWidth * 0.75, behavior: 'smooth' });
     });
 
-    nav.appendChild(freccia);
+    // Dentro la fila, come ultima voce: la barra ha gli angoli tondi e
+    // ritaglia quello che contiene, quindi la freccia non puo sbordare.
+    // Appoggiata sopra (in .mp-nav) copriva la curva dell'angolo.
+    barra.appendChild(freccia);
   }
 
   function aggiornaFreccia() {
