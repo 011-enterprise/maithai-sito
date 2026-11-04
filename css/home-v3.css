@@ -1072,6 +1072,12 @@ img { max-width: 100%; display: block; }
   .v3-graffiti--smile-hero { width: 100px; bottom: 3%; }
 
   /* Chi siamo */
+  /* Meno aria sotto: la foto e un PNG che ha gia il suo vuoto in fondo,
+     e sommato al respiro della sezione diventava mezzo schermo bianco */
+  .v3-chisiamo {
+    padding: 3rem 0 1rem;
+  }
+
   .v3-chisiamo__inner {
     grid-template-columns: 1fr;
     padding: 0 1.5rem;
@@ -1098,8 +1104,9 @@ img { max-width: 100%; display: block; }
   /* Qui la stellina non puo stare di lato: a sinistra c'e il testo, e le
      finirebbe dietro. Va dentro la foto, piu piccola, dietro al piatto. */
   .v3-graffiti--stella-chisiamo-2 {
-    width: 58%;
-    top: 55%;
+    /* Piu larga del piatto, cosi le punte sporgono e si vede che c'e */
+    width: 85%;
+    top: 48%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(12deg);
   }
