@@ -68,9 +68,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }, { passive: true });
 
-  /* ---- Autoplay ---- */
+  /* ---- Autoplay ----
+     6 secondi: ogni slide porta indirizzo, orari e telefono, e a 4,5
+     secondi cambiava prima che si finisse di leggerli. */
   function startAutoplay() {
-    autoplayTimer = setInterval(function () { showSlide(current + 1); }, 4500);
+    autoplayTimer = setInterval(function () { showSlide(current + 1); }, 6000);
   }
 
   function stopAutoplay() {
