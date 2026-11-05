@@ -1039,6 +1039,42 @@ img { max-width: 100%; display: block; }
 
 /* ===== RESPONSIVE ===== */
 
+/* ----- Fascia intermedia: tablet e finestre ridotte -----
+   Qui le due colonne ci sono ancora, ma strette: il vuoto fra testo e
+   foto sparisce, e la stellina (che su schermo largo sta fuori dalla
+   foto, a sinistra) finiva sopra le parole. Da qui in giu rientra dentro
+   la foto, dietro al piatto, come fa gia da telefono. */
+@media (max-width: 1150px) {
+  .v3-chisiamo__inner {
+    gap: 1.5rem;
+    padding: 0 2rem;
+  }
+
+  /* Senza questo la foto sborda dalla sua colonna: ha altezza massima
+     fissa e larghezza automatica, quindi non si accorge di essere
+     stretta */
+  .v3-chisiamo__photo {
+    width: 100%;
+  }
+
+  .v3-chisiamo__photo > img:last-child {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: none;
+  }
+
+  .v3-graffiti--stella-chisiamo-2 {
+    width: 78%;
+    top: 52%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(12deg);
+  }
+
+  /* La foto parte piu in alto: la colonna di testo qui e piu alta */
+  .v3-chisiamo__visual { padding-top: 3rem; }
+}
+
 @media (max-width: 768px) {
   /* Header — barra larga quanto lo schermo: dentro ci stanno logo,
      carrello e menu, come su quasi tutti i siti da telefono */
