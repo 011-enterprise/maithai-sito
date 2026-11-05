@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
     dot.addEventListener('click', function () {
       stopAutoplay();
       showSlide(i);
-      startAutoplay();
+      riprendiSeLibero();
     });
     dotsWrap.appendChild(dot);
   });
@@ -72,6 +72,13 @@ document.addEventListener('DOMContentLoaded', function () {
      6 secondi: ogni slide porta indirizzo, orari e telefono, e a 4,5
      secondi cambiava prima che si finisse di leggerli. */
   function startAutoplay() {
+    // Si spegne sempre il precedente prima di accenderne uno nuovo.
+    // Senza questa riga i timer si sommavano: bastava passare il mouse
+    // sulla sezione e premere una freccia (ferma, riparte) e poi uscire
+    // col mouse (riparte di nuovo) per averne due in corsa insieme, e il
+    // vecchio non si poteva piu spegnere perche se ne teneva solo l'ultimo.
+    // Da qui i salti: due slide regolari e la terza che scappa via.
+    clearInterval(autoplayTimer);
     autoplayTimer = setInterval(function () { showSlide(current + 1); }, 6000);
   }
 
@@ -79,12 +86,29 @@ document.addEventListener('DOMContentLoaded', function () {
     clearInterval(autoplayTimer);
   }
 
-  /* ---- Controlli frecce (desktop) ---- */
-  if (prevBtn) prevBtn.addEventListener('click', function () { stopAutoplay(); showSlide(current - 1); startAutoplay(); });
-  if (nextBtn) nextBtn.addEventListener('click', function () { stopAutoplay(); showSlide(current + 1); startAutoplay(); });
+  /* Col mouse sulla sezione lo scorrimento resta fermo: chi sta leggendo
+     un indirizzo non se lo vede cambiare sotto gli occhi. Dopo una
+     freccia si riparte solo se il mouse e gia andato via, altrimenti
+     bastava un clic per rimettere in moto tutto. */
+  var mouseSullaSezione = false;
 
-  sediSection.addEventListener('mouseenter', stopAutoplay);
-  sediSection.addEventListener('mouseleave', startAutoplay);
+  function riprendiSeLibero() {
+    if (!mouseSullaSezione) startAutoplay();
+  }
+
+  /* ---- Controlli frecce (desktop) ---- */
+  if (prevBtn) prevBtn.addEventListener('click', function () { stopAutoplay(); showSlide(current - 1); riprendiSeLibero(); });
+  if (nextBtn) nextBtn.addEventListener('click', function () { stopAutoplay(); showSlide(current + 1); riprendiSeLibero(); });
+
+  sediSection.addEventListener('mouseenter', function () {
+    mouseSullaSezione = true;
+    stopAutoplay();
+  });
+
+  sediSection.addEventListener('mouseleave', function () {
+    mouseSullaSezione = false;
+    startAutoplay();
+  });
 
   /* ---- Swipe touch (desktop fallback — su mobile usa scroll nativo) ---- */
   var touchStartX = 0;
@@ -97,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (Math.abs(dx) < 40) return;
     stopAutoplay();
     showSlide(dx < 0 ? current + 1 : current - 1);
-    startAutoplay();
+    riprendiSeLibero();
   }, { passive: true });
 
   /* ---- Tasto tastiera (desktop) ---- */
@@ -105,8 +129,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const rect = sediSection.getBoundingClientRect();
     const inView = rect.top < window.innerHeight && rect.bottom > 0;
     if (!inView) return;
-    if (e.key === 'ArrowLeft')  { stopAutoplay(); showSlide(current - 1); startAutoplay(); }
-    if (e.key === 'ArrowRight') { stopAutoplay(); showSlide(current + 1); startAutoplay(); }
+    if (e.key === 'ArrowLeft')  { stopAutoplay(); showSlide(current - 1); riprendiSeLibero(); }
+    if (e.key === 'ArrowRight') { stopAutoplay(); showSlide(current + 1); riprendiSeLibero(); }
   });
 
   startAutoplay();
