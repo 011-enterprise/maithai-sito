@@ -728,14 +728,25 @@ img { max-width: 100%; display: block; }
   gap: 0.65rem;
 }
 
+/* Le foto restano tutte impilate e si scambiano in dissolvenza: con
+   display none/block il cambio era uno stacco secco, e bastava un
+   fotogramma di ritardo perche sembrasse un salto. Sono sovrapposte,
+   quindi solo quella attiva e visibile e cliccabile. */
 .v3-sedi__photo {
-  display: none;
   position: absolute;
   inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
 }
 
 .v3-sedi__photo.active {
-  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v3-sedi__photo { transition: none; }
 }
 
 .v3-sedi__photo img {

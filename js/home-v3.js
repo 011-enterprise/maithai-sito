@@ -133,5 +133,24 @@ document.addEventListener('DOMContentLoaded', function () {
     if (e.key === 'ArrowRight') { stopAutoplay(); showSlide(current + 1); riprendiSeLibero(); }
   });
 
+
+  /* ---- Foto pronte prima che servano ----
+     Stanno in contenitori nascosti e hanno loading="lazy": il browser
+     le scarica solo quando compaiono, e al cambio di slide si vede un
+     lampo vuoto mentre arrivano 400-500 KB. Qui si scaldano dopo il
+     caricamento della pagina, quindi senza rallentarne l'apertura. */
+  window.addEventListener('load', function () {
+    // Da telefono la colonna delle foto e nascosta: scaricarle sarebbero
+    // tre mega di traffico per niente
+    if (isMobile()) return;
+    photos.forEach(function (box) {
+      var img = box.querySelector('img');
+      if (!img) return;
+      img.loading = 'eager';
+      var anticipo = new Image();
+      anticipo.src = img.currentSrc || img.src;
+    });
+  });
+
   startAutoplay();
 });
